@@ -1,0 +1,16 @@
+apiVersion: v2
+appVersion: 0.0.1
+description: Common chart for microservice
+maintainers:
+  - email: duclm.269@gmail.com
+    name: duclm
+name: common
+type: library
+version: 1.0.0
+
+dependencies:
+  - name: common
+    repository: oci://registry-1.docker.io/bitnamicharts
+    tags:
+      - bitnami-common
+    version: 2.x.x

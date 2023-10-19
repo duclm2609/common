@@ -1,0 +1,35 @@
+{{- define "common.autoscaling" -}}
+{{- $common := dict "Values" .Values.common -}}
+{{- $noCommon := omit .Values "common" -}}
+{{- $overrides := dict "Values" $noCommon -}}
+{{- $noValues := omit . "Values" -}}
+{{- with merge $noValues $overrides $common -}}
+{{- if .Values.autoscaling.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.autoscaling.advanced }}
+  advanced:
+{{ toYaml . | indent 4 }}
+  {{- end }}
+  {{- with .Values.autoscaling.fallback }}
+  fallback:
+{{ toYaml . | indent 4 }}
+  {{- end }}
+  pollingInterval: {{ .Values.autoscaling.pollingInterval | default 30 }}
+  cooldownPeriod: {{ .Values.autoscaling.cooldownPeriod | default 300 }}
+  idleReplicaCount: {{ .Values.autoscaling.idleReplicaCount }}
+  minReplicaCount: {{ .Values.autoscaling.minReplicaCount | default 1 }}
+  scaleTargetRef:
+    name: {{ include "common.names.fullname" . }}
+  triggers:
+{{ toYaml .Values.autoscaling.triggers | indent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

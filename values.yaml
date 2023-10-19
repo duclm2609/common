@@ -1,0 +1,374 @@
+## @param nameOverride String to partially override common.names.fullname template with a string (will prepend the release name)
+##
+nameOverride: ""
+## @param fullnameOverride String to fully override common.names.fullname template with a string
+##
+fullnameOverride: ""
+## @param commonAnnotations Annotations to add to all deployed objects
+##
+commonAnnotations: { }
+## @param commonLabels Labels to add to all deployed objects
+##
+commonLabels: { }
+
+## @param deploymentAnnotations Custom annotations on deployment
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+##
+deploymentAnnotations: { }
+
+namespaceOverride: ""
+
+## @param podAnnotations Pod annotations
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+##
+podAnnotations: { }
+## @param podLabels Extra labels to add to Pod
+##
+podLabels: { }
+
+## @param updateStrategy.type Set up update strategy for Kibana installation.
+## Set to Recreate if you use persistent volume that cannot be mounted by more than one pods to makesure the pods are destroyed first.
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+## Example:
+## updateStrategy:
+##  type: RollingUpdate
+##  rollingUpdate:
+##    maxSurge: 25%
+##    maxUnavailable: 25%
+##
+updateStrategy:
+  type: RollingUpdate
+#  rollingUpdate:
+#    maxSurge: 25%
+#    maxUnavailable: 25%
+
+revisionHistoryLimit: 1
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: { }
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+  automountServiceAccountToken: true
+
+imagePullSecrets: ""
+
+image:
+  repository: ""
+  name: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+## @param command Override default container command (useful when using custom images)
+##
+command: [ ]
+## @param args Override default container args (useful when using custom images)
+##
+args: [ ]
+
+securityContext: { }
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
+
+# List of services
+service:
+  labels: { }
+  annotations:
+    loadbalancer.aws.com: internal
+  specs:
+    - port: 8080
+      targetPort: 8080
+      name: http
+
+## @param lifecycleHooks for the haproxy container(s) to automate configuration before or after startup
+##
+lifecycleHooks: { }
+
+## @param Configure pod environment variables, using ConfigMap
+##
+config: { }
+
+# Extra configmaps to use as env
+# extraEnvVarsCMs:
+#   - name: foo
+extraEnvVarsCMs: [ ]
+
+# Extra secrets to use as env
+# extraEnvVarsSecret:
+#   - name: foo
+extraEnvVarsSecret: [ ]
+
+## @param secretsStoreCsi configure secrets store CSI
+secretsStoreCsi:
+  # Create ENV from secrets store in AWS Secret Manager
+  env:
+    enabled: false
+    secretArn: ""
+    keys: [ ]
+  #      - SAMPLE_KEY
+  # Mount secrets object as files in pod
+  files:
+    enabled: false
+    mountPath: /mnt/secrets
+    objects: [ ]
+    # - name: ARN (cross account) | secret name (same account)
+    #   alias: filename
+
+## Enable persistence using Persistent Volume Claims
+## ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
+##
+persistence:
+  ## @param persistence.enabled Enable persistence
+  ##
+  enabled: false
+  ## @param persistence.storageClass Kibana data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  storageClass: ""
+  ## @param persistence.existingClaim Provide an existing `PersistentVolumeClaim`
+  ##
+  existingClaim: ""
+  ## @param persistence.accessModes Persistent Volume access modes
+  ##
+  accessModes:
+    - ReadWriteOnce
+  ## @param persistence.size Size for the PV
+  ##
+  size: 1Gi
+  ## @param persistence.annotations Persistent Volume Claim annotations
+  ##
+  annotations: { }
+  ## @param persistence.mountPath The directory of the volume to mount to
+  ##
+  mountPath: /data
+  ## @param persistence.subPath The subdirectory of the volume to mount to
+  ##
+  subPath: ""
+  ## @param persistence.readOnly Mount directory as read-only mode
+  ##
+  readOnly: ""
+  ## @param persistence.selector Selector to match an existing Persistent Volume data PVC
+  ## If set, the PVC can't have a PV dynamically provisioned for it
+  ## E.g.
+  ## selector:
+  ##   matchLabels:
+  ##     app: my-app
+  ##
+  selector: { }
+  ## @param persistence.dataSource Custom PVC data source
+  ##
+  dataSource: { }
+
+## @param extraVolumes Array to add extra volumes. Requires setting `extraVolumeMounts`
+##
+extraVolumes: []
+## @param extraVolumeMounts Array to add extra mounts. Normally used with `extraVolumes`
+##
+extraVolumeMounts: []
+
+resources: { }
+#  requests:
+#    cpu: 50m
+#    memory: 128Mi
+#  limits:
+#    cpu: 100m
+#    memory: 256Mi
+
+## Configure extra options for startup probe
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
+## @param startupProbe.enabled Enable/disable the startup probe
+## @param startupProbe.initialDelaySeconds Delay before startup probe is initiated
+## @param startupProbe.periodSeconds How often to perform the probe
+## @param startupProbe.timeoutSeconds When the probe times out
+## @param startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded.
+## @param startupProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed.
+##
+startupProbe:
+  enabled: false
+  initialDelaySeconds: 120
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+## Configure extra options for service containers' liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+## @param livenessProbe.enabled Enable livenessProbe
+## @skip livenessProbe.httpGet
+## @param livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+## @param livenessProbe.periodSeconds Period seconds for livenessProbe
+## @param livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+## @param livenessProbe.failureThreshold Failure threshold for livenessProbe
+## @param livenessProbe.successThreshold Success threshold for livenessProbe
+##
+livenessProbe:
+  enabled: false
+  #  httpGet:
+  #    path: ""
+  #    port: http
+  #    scheme: HTTP
+  ## If using an HTTPS-terminating load-balancer, the probes may need to behave
+  ## like the balancer to prevent HTTP 302 responses. According to the Kubernetes
+  ## docs, 302 should be considered "successful", but this issue on GitHub
+  ## (https://github.com/kubernetes/kubernetes/issues/47893) shows that it isn't.
+  ## E.g.
+  ## httpHeaders:
+  ## - name: X-Forwarded-Proto
+  ##   value: https
+  ##
+#    httpHeaders: [ ]
+#  initialDelaySeconds: 120
+#  periodSeconds: 10
+#  timeoutSeconds: 5
+#  failureThreshold: 6
+#  successThreshold: 1
+
+## @param readinessProbe.enabled Enable readinessProbe
+## @skip readinessProbe.httpGet
+## @param readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+## @param readinessProbe.periodSeconds Period seconds for readinessProbe
+## @param readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+## @param readinessProbe.failureThreshold Failure threshold for readinessProbe
+## @param readinessProbe.successThreshold Success threshold for readinessProbe
+##
+readinessProbe:
+  enabled: false
+  #  httpGet:
+  #    path: /wp-login.php
+  #    port: http
+  #    scheme: HTTP
+  ## If using an HTTPS-terminating load-balancer, the probes may need to behave
+  ## like the balancer to prevent HTTP 302 responses. According to the Kubernetes
+  ## docs, 302 should be considered "successful", but this issue on GitHub
+  ## (https://github.com/kubernetes/kubernetes/issues/47893) shows that it isn't.
+  ## E.g.
+  ## httpHeaders:
+  ## - name: X-Forwarded-Proto
+  ##   value: https
+  ##
+  #    httpHeaders: [ ]
+  #  initialDelaySeconds: 30
+  #  periodSeconds: 10
+  #  timeoutSeconds: 5
+  #  failureThreshold: 6
+  #  successThreshold: 1
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: { }
+  # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      servicePort: 8000
+      serviceName: web
+      path: /
+  tls: [ ]
+
+tolerations: [ ]
+
+affinity: { }
+
+topologySpreadConstraints: [ ]
+# - maxSkew: 1
+#   topologyKey: topology.kubernetes.io/zone
+#   whenUnsatisfiable: DoNotSchedule
+#   labelSelector:
+#     matchLabels:
+#       app.kubernetes.io/instance: release-name
+
+nodeSelector: { }
+
+extraContainers: [ ]
+
+initContainers: [ ]
+
+# Enable only for debugging with ephemeral container
+shareProcessNamespace: false
+
+## @param terminationGracePeriodSeconds In seconds, time the given to the %%MAIN_CONTAINER_NAME%% pod needs to terminate gracefully
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods
+##
+terminationGracePeriodSeconds: ""
+
+## @param schedulerName Alternative scheduler
+## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+##
+schedulerName: ""
+
+## @param priorityClassName %%MAIN_CONTAINER_NAME%% pods' priorityClassName
+##
+priorityClassName: ""
+
+## @param hostAliases Add deployment host aliases
+## https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
+##
+hostAliases: [ ]
+
+## Configure Pods Security Context
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+##
+podSecurityContext: { }
+
+## Configure Container Security Context
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+##
+containerSecurityContext: { }
+
+serviceMonitor:
+  ## @param metrics.serviceMonitor.enabled Create ServiceMonitor Resource for scraping metrics using PrometheusOperator
+  ##
+  enabled: false
+  ## @param metrics.serviceMonitor.endpoints [array] The endpoint configuration of the ServiceMonitor. Path is mandatory. Interval, timeout and labellings can be overwritten.
+  ##
+  endpoints: [ ]
+  ##- path: '{{ include "keycloak.httpPath" . }}metrics'
+  ##- path: '{{ include "keycloak.httpPath" . }}realms/master/metrics'
+  ## @param metrics.serviceMonitor.namespace Namespace which Prometheus is running in
+  ##
+  namespace: ""
+  ## @param metrics.serviceMonitor.labels Additional labels that can be used so ServiceMonitor will be discovered by Prometheus
+  ##
+  labels: { }
+  ## @param metrics.serviceMonitor.selector Prometheus instance selector labels
+  ## ref: https://github.com/bitnami/charts/tree/main/bitnami/prometheus-operator#prometheus-configuration
+  ##
+  selector: { }
+  ## @param metrics.serviceMonitor.jobLabel The name of the label on the target service to use as the job name in prometheus.
+  ##
+  jobLabel: ""
+
+## Configure autoscaling using KEDA
+autoscaling:
+  enabled: false
+#  idleReplicaCount: 0
+#  minReplicaCount: 1
+#  triggers:
+#    - type: cpu
+#      metricType: Utilization
+#      metadata:
+#        type: Utilization
+#        value: "60"
+
+## Creates role for ServiceAccount
+## @param rbac.create Create Role and RoleBinding / ClusterRole and ClusterRoleBinding
+##
+rbac:
+  namespaced:
+    create: false
+    rules: [ ]
+  cluster:
+    create: false
+    rules: [ ]
