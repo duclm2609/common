@@ -83,7 +83,6 @@ spec:
               containerPort: {{ .targetPort | default .port}}
               protocol: {{ .protocol | default "TCP" }}
             {{- end }}
-          {{- if or .Values.config .Values.extraEnvVarsCMs .Values.extraEnvVarsSecrets .Values.secretsStoreCsi.env.enabled }}
           envFrom:
             {{- with .Values.config }}
             - configMapRef:
@@ -97,11 +96,10 @@ spec:
             - secretRef:
                 name: {{ include "common.tplvalues.render" (dict "value" . "context" $) }}
             {{- end }}
-            {{- if .Values.secretsStoreCsi.env.enabled }}
+            {{- if (include "secretsStoreCsiEnvEnabled" .) }}
             - secretRef:
-                name: {{ include "secretStoreCSISecretNameEnv" $ }}
+                name: {{ include "common.names.fullname" . }}
             {{- end }}
-          {{- end }}
           {{- if .Values.lifecycleHooks }}
           lifecycle: {{- include "common.tplvalues.render" (dict "value" .Values.lifecycleHooks "context" $) | nindent 12 }}
           {{- end }}
@@ -116,9 +114,9 @@ spec:
               readOnly: {{ .Values.persistence.readOnly }}
               {{- end }}
             {{- end }}
-            {{- if .Values.secretsStoreCsi.files.enabled }}
-            - mountPath: {{ .Values.secretsStoreCsi.files.mountPath }}
-              name: secrets-store-csi-files
+            {{- if .Values.secretsStoreCsi.enabled }}
+            - mountPath: {{ .Values.secretsStoreCsi.mountPath }}
+              name: secrets-store-csi
               readOnly: true
             {{- end }}
             {{- if .Values.extraVolumeMounts }}
@@ -144,21 +142,13 @@ spec:
           persistentVolumeClaim:
             claimName: {{ include "pvc" . }}
         {{- end }}
-        {{- if .Values.secretsStoreCsi.env.enabled }}
-        - name: secrets-store-csi-env
+        {{- if .Values.secretsStoreCsi.enabled }}
+        - name: secrets-store-csi
           csi:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: {{ include "secretStoreCSISecretNameEnv" $ }}
-        {{- end }}
-        {{- if .Values.secretsStoreCsi.files.enabled }}
-        - name: secrets-store-csi-files
-          csi:
-            driver: secrets-store.csi.k8s.io
-            readOnly: true
-            volumeAttributes:
-              secretProviderClass: {{ include "secretStoreCSISecretNameFiles" $ }}
+              secretProviderClass: {{ include "common.names.fullname" $ }}
         {{- end }}
         {{- if .Values.extraVolumes }}
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 8 }}

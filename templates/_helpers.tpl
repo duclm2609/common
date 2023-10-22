@@ -10,22 +10,20 @@ Create the name of the service account to use
 {{- end -}}
 
 {{/*
-Define secret name created by Secret Store CSI
-*/}}
-{{- define "secretStoreCSISecretNameEnv" -}}
-{{- printf "%s-%s" (include "common.names.fullname" .) "env" -}}
-{{- end -}}
-
-{{/*
-Define secret name created by Secret Store CSI
-*/}}
-{{- define "secretStoreCSISecretNameFiles" -}}
-{{- printf "%s-%s" (include "common.names.fullname" .) "files" -}}
-{{- end -}}
-
-{{/*
 Set data PVC.
 */}}
 {{- define "pvc" -}}
 {{- .Values.persistence.existingClaim | default (include "common.names.fullname" .) -}}
 {{- end -}}
+
+{{/*
+Return true if enironment variables from secrets store CSI provided
+*/}}
+{{- define "secretsStoreCsiEnvEnabled" -}}
+{{- if .Values.secretsStoreCsi.enabled -}}
+    {{- if .Values.secretsStoreCsi.env }}
+        {{- true -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+

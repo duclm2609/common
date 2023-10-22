@@ -107,19 +107,18 @@ extraEnvVarsSecret: [ ]
 
 ## @param secretsStoreCsi configure secrets store CSI
 secretsStoreCsi:
+  enabled: false
+  mountPath: /mnt/secrets
   # Create ENV from secrets store in AWS Secret Manager
-  env:
-    enabled: false
-    secretArn: ""
-    keys: [ ]
-  #      - SAMPLE_KEY
+  env: { }
+  # secretArn: "arn:aws:secretsmanager:us-east-1:1234567890:secret:SecretName-6RandomCharacters"
+  # keys:
+  #   - SAMPLE_KEY
   # Mount secrets object as files in pod
-  files:
-    enabled: false
-    mountPath: /mnt/secrets
-    objects: [ ]
-    # - name: ARN (cross account) | secret name (same account)
-    #   alias: filename
+  files: { }
+  #  objects:
+  #  - name: ARN (cross account) | secret name (same account)
+  #    alias: filename
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
@@ -172,10 +171,10 @@ persistence:
 
 ## @param extraVolumes Array to add extra volumes. Requires setting `extraVolumeMounts`
 ##
-extraVolumes: []
+extraVolumes: [ ]
 ## @param extraVolumeMounts Array to add extra mounts. Normally used with `extraVolumes`
 ##
-extraVolumeMounts: []
+extraVolumeMounts: [ ]
 
 resources: { }
 #  requests:

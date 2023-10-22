@@ -1,0 +1,1 @@
+# Common library Helm chart used for microservice
